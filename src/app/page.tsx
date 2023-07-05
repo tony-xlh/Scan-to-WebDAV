@@ -2,6 +2,7 @@
 import styles from './page.module.css'
 import { useRef } from 'react';
 import { WebTwain } from 'dwt/dist/types/WebTwain';
+import Dynamsoft from 'dwt'; 
 import dynamic from 'next/dynamic';
 
 const DWT = dynamic(() => import("./components/DWT"), {
@@ -15,8 +16,12 @@ export default function Home() {
   }
   const scan = async () => {
     if (DWObject.current) {
-      const index = await DWObject.current.SelectSourceAsync();
-      DWObject.current.AcquireImageAsync({SelectSourceByIndex:index});
+      if (Dynamsoft.Lib.env.bMobile) {
+        DWObject.current.Addon.Camera.scanDocument();
+      }else{
+        const index = await DWObject.current.SelectSourceAsync();
+        DWObject.current.AcquireImageAsync({SelectSourceByIndex:index});
+      }
     }
   }
   return (

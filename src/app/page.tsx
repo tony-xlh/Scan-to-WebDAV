@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { WebTwain } from 'dwt/dist/types/WebTwain';
 import Dynamsoft from 'dwt'; 
 import dynamic from 'next/dynamic';
+import { AuthType, createClient } from "webdav";
 
 const DWT = dynamic(() => import("./components/DWT"), {
   ssr: false,
@@ -26,6 +27,16 @@ export default function Home() {
         DWObject.current.AcquireImageAsync({SelectSourceByIndex:index});
       }
     }
+  }
+
+  const send = async () => {
+    const client = createClient(serverURL, {
+        authType: AuthType.Password,
+        username: username,
+        password: password
+    });
+    const files = await client.getDirectoryContents("./")
+    console.log(files);
   }
   return (
     <main>
@@ -52,6 +63,7 @@ export default function Home() {
           </div>
         </div>
         <button onClick={scan}>Scan</button>
+        <button onClick={send}>Send</button>
         <div className={styles.documentScanner}>
           <DWT viewMode={{rows:2,cols:2}} width="100%" height="100%" onWebTWAINReady={(dwt)=>onWebTWAINReady(dwt)}></DWT>
         </div>

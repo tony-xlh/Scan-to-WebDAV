@@ -25,7 +25,7 @@ export default function Home() {
         <h2>Document Scanner</h2>
         <button onClick={scan}>Scan</button>
         <div className={styles.documentScanner}>
-          <DWT width="100%" height="100%" onWebTWAINReady={(dwt)=>onWebTWAINReady(dwt)}></DWT>
+          <DWT viewMode={{rows:2,cols:2}} width="100%" height="100%" onWebTWAINReady={(dwt)=>onWebTWAINReady(dwt)}></DWT>
         </div>
       </div>
     </main>

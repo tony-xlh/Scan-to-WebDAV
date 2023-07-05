@@ -1,6 +1,6 @@
 'use client'
 import styles from './page.module.css'
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { WebTwain } from 'dwt/dist/types/WebTwain';
 import Dynamsoft from 'dwt'; 
 import dynamic from 'next/dynamic';
@@ -10,7 +10,10 @@ const DWT = dynamic(() => import("./components/DWT"), {
 });
 
 export default function Home() {
-  const DWObject = useRef<WebTwain|undefined>(undefined)
+  const DWObject = useRef<WebTwain|undefined>(undefined);
+  const [serverURL, setServerURL] = useState("http://127.0.0.1:8080");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const onWebTWAINReady = (dwt:WebTwain)  => {
     DWObject.current = dwt;
   }
@@ -28,6 +31,26 @@ export default function Home() {
     <main>
       <div>
         <h2>Document Scanner</h2>
+        <div>
+          <div>
+            <label>
+              WebDAV Server URL:
+              <input type="text" value={serverURL} onChange={(e)=>setServerURL(e.target.value)}/>
+            </label>
+          </div>
+          <div>
+            <label>
+              Username:
+              <input type="text" value={username} onChange={(e)=>setUsername(e.target.value)}/>
+            </label>
+          </div>
+          <div>
+            <label>
+              Password:
+              <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)}/>
+            </label>
+          </div>
+        </div>
         <button onClick={scan}>Scan</button>
         <div className={styles.documentScanner}>
           <DWT viewMode={{rows:2,cols:2}} width="100%" height="100%" onWebTWAINReady={(dwt)=>onWebTWAINReady(dwt)}></DWT>

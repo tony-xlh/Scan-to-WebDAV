@@ -5,10 +5,6 @@
   <title>Scan to WebDAV</title>
   <script src="https://unpkg.com/dwt@18.0.0/dist/dynamsoft.webtwain.min.js"></script>
   <style>
-    .scanButton {
-      height: 25px;
-    }
-
     #dwtcontrolContainer {
       width: 360px;
       height: 480px;
@@ -19,7 +15,7 @@
 <body>
   <div>
     <input class="scanButton" type="button" value="Scan" onclick="AcquireImage();" />
-    <input class="sendButton" type="button" value="Send" onclick="connect();" />
+    <input class="sendButton" type="button" value="Send" onclick="convertAndUpload();" />
     <div>
       <div>
         <label>
@@ -37,6 +33,12 @@
         <label>
           Password:
           <input type="password" id="password"/>
+        </label>
+      </div>
+      <div>
+        <label>
+          Path:
+          <input type="text" id="filepath" value="scanned.pdf"/>
         </label>
       </div>
     </div>
@@ -71,12 +73,30 @@
       }
     }
 
-    function connect(){
+    function convertAndUpload(){
+      if (DWObject) {
+        DWObject.ConvertToBase64(
+            [0],
+            Dynamsoft.DWT.EnumDWT_ImageType.IT_PDF,
+            function (result, indices, type) {
+                var base64 = result.getData(0, result.getLength());
+                upload(base64);
+            },
+            function (errorCode, errorString) {
+                console.log(errorString);
+            }
+        );
+      }
+    }
+
+    function upload(base64){
       let xhr = new XMLHttpRequest();
       let pay_load = {};
       pay_load["URL"] = document.getElementById("URL").value;
       pay_load["username"] = document.getElementById("username").value;
       pay_load["password"] = document.getElementById("password").value;
+      pay_load["filepath"] = document.getElementById("filepath").value;
+      pay_load["base64"] = base64;
       console.log(pay_load);
       xhr.open("POST", "/uploadfile");
       xhr.setRequestHeader("content-type", "application/json"); 
@@ -84,7 +104,8 @@
       xhr.onreadystatechange = function(){
         if(xhr.readyState === 4){
           if (xhr.status === 200) {
-            console.log(xhr.responseText);
+            var status = JSON.parse(xhr.responseText)["status"];
+            alert(status);
           }
         }
       }

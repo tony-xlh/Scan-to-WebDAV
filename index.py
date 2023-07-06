@@ -1,6 +1,7 @@
 from flask import Flask, request, send_file
 from flask_cors import CORS, cross_origin
 from webdav4.client import Client
+from io import BytesIO
 import base64
 import os
 import time
@@ -18,18 +19,21 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 def upload_file():
     if request.method == 'POST':
         data = request.get_json()
-        print(data)
         URL = data["URL"]
         username = data["username"]
         password = data["password"]
         client = Client(URL, auth=(username, password))
-        files = client.ls("/", detail=False)
-        print(files)
-        return json.dumps(files)
-    else:
-        return ""
         
-
+        path = data["filepath"]
+        if client.exists(path) == False:
+            base64str = data["base64"]
+            bytes_decoded = base64.b64decode(base64str)
+            
+            client.upload_fileobj(BytesIO(bytes_decoded), path, overwrite = True)
+            return json.dumps({"status":"success"})
+        else:
+            return json.dumps({"status":"file exists"})
 
 if __name__ == '__main__':
    app.run(host = "0.0.0.0", port = 8888) #, ssl_context='adhoc'
+   

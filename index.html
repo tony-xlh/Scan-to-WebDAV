@@ -16,6 +16,7 @@
   <div>
     <input class="scanButton" type="button" value="Scan" onclick="AcquireImage();" />
     <input class="sendButton" type="button" value="Send" onclick="convertAndUpload();" />
+    <span id="status"></span>
     <div>
       <div>
         <label>
@@ -76,20 +77,29 @@
     function convertAndUpload(){
       if (DWObject) {
         DWObject.ConvertToBase64(
-            [0],
-            Dynamsoft.DWT.EnumDWT_ImageType.IT_PDF,
-            function (result, indices, type) {
-                var base64 = result.getData(0, result.getLength());
-                upload(base64);
-            },
-            function (errorCode, errorString) {
-                console.log(errorString);
-            }
+          getIndices(),
+          Dynamsoft.DWT.EnumDWT_ImageType.IT_PDF,
+          function (result, indices, type) {
+            var base64 = result.getData(0, result.getLength());
+            upload(base64);
+          },
+          function (errorCode, errorString) {
+            console.log(errorString);
+          }
         );
       }
     }
 
+    function getIndices(){
+      var indices = [];
+      for (let index = 0; index < DWObject.HowManyImagesInBuffer; index++) {
+        indices.push(index);
+      }
+      return indices;
+    }
+
     function upload(base64){
+      document.getElementById("status").innerText = "Uploading...";
       let xhr = new XMLHttpRequest();
       let pay_load = {};
       pay_load["URL"] = document.getElementById("URL").value;
@@ -104,12 +114,23 @@
       xhr.onreadystatechange = function(){
         if(xhr.readyState === 4){
           if (xhr.status === 200) {
+            document.getElementById("status").innerText = "";
             var status = JSON.parse(xhr.responseText)["status"];
             alert(status);
+          }else{
+            onerror();
           }
         }
       }
+
+      xhr.onerror = onerror;
+
       xhr.send(JSON.stringify(pay_load));
+    }
+
+    function onerror(){
+      document.getElementById("status").innerText = "";
+      alert("Failed");
     }
 
   </script>
